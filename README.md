@@ -89,6 +89,12 @@ List of 300 VueJS Interview Questions
 |80 | [What is the purpose of keep alive tag?](#what-is-the-purpose-of-keep-alive-tag)|
 |81 | [What are async components?](#what-are-async-components)|
 |82 | [What is the structure of async component factory?](#what-is-the-structure-of-async-component-factory)|
+|83 | [What are inline templates?](#what-are-inline-templates)|
+|84 | [What are X Templates?](#what-are-x-templates)|
+|85 | [What are recursive components?](#what-are-recursive-components)|
+|86 | [How do you resolve circular dependencies between components?](#how-do-you-resolve-circular-dependencies-between-components)|
+|87 | [How do you make sure vue application is CSP complaint?](#how-do-you-make-sure-vue-application-is-csp-complaint)|
+|88 | [What is the difference between full and runtime only builds?](#what-is-the-difference-between-full-and-runtime-only-builds)|
 
 1.  ### What is VueJS?
     **Vue.js** is an open-source, progressive Javascript framework for building user interfaces that aim to be incrementally adoptable. The core library of VueJS is focused on the `view layer` only, and is easy to pick up and integrate with other libraries or existing projects.
@@ -1699,4 +1705,73 @@ List of 300 VueJS Interview Questions
        timeout: 3000
      })
      ```
+83.  ### What are inline templates?
+     If you keep an `inline-template` on a child component then it will use its inner content as a template instead of treating as reusable independent content.
+     ```javascript
+    <my-component inline-template>
+        <div>
+            <h1>Inline templates</p>
+            <p>Treated as component component owne content</p>
+        </div>
+    </my-component>
+     ```
+     **Note:** Eventhough this inline-templates gives more flexibility for template authoring, it is recommended to define template using template property or <template> tag inside .vue component.
+84.  ### What are X Templates?
+     Apart from regular templates and inline templates, you can also define templates using a script element with the type `text/x-template` and then referencing the template by an id.
+     Let's create a x-template for simple use case as below,
+     ```javascript
+     <script type="text/x-template" id="script-template">
+       <p>Welcome to X-Template feature</p>
+     </script>
+     ```
+     Now you can define the template using reference id,
+     ```javascript
+     Vue.component('x-template-example', {
+       template: '#script-template'
+     })
+     ```
+85.  ### What are recursive components?
+     The Components that can recursively invoke themselves in their own template are known as recursive components.
+     ```javascript
+     Vue.component('recursive-component', {
+       template: `<!--Invoking myself!-->
+                  <recursive-component></recursive-component>`
+     });
+     ```
+    Recursive components are useful for displaying comments on a blog, nested menus, or basically anything where the parent and child are the same, eventhough with different content.
+    **Note:** Remember that recursive component can lead infinite loops with `max stack size exceeded` error, so make sure recursive invocation is conditional(for example, v-if directive).
+86. ### How do you resolve circular dependencies between components?
+    In complex applications, vue components will actually be each other’s descendent and ancestor in the render tree. Let's say componentA and componentB included in their respective templates which makes circular dependency,
+    ```javascript
+    //ComponentA
+    <div>
+      <component-b >
+    </div>
+    ```
+    ```javascript
+    //ComponentA
+    <div>
+      <component-b >
+    </div>
+    ```
+    This can be solved by either registering(or wait until) the child component in `beforeCreate` hook or using webpack's asynchronous import while registering the component,
+    **Solution1:**
+    ```javascript
+    beforeCreate: function () {
+      this.$options.components.componentB = require('./component-b.vue').default
+    }
+    ```
+    **Solution2:**
+    ```javascript
+    components: {
+      componentB: () => import('./component-b.vue')
+    }
+    ```
+87. ### How do you make sure vue application is CSP complaint?
+    Some environments(Google Chrome Apps) prohibits the usage of `new Function()` for evaluating expressions and the full builds of vue applications depends on this feature to compile templates. Due to this reason, the full builds of VueJS application are not CSP complaint. In this case you can use **runtime-only** builds with Webpack + vue-loader or Browserify + vueify technology stack through which templates will be precompiled into render functions. This way you can make sure VueJS applications are 100% CSP complaint.
+88. ### What is the difference between full and runtime only builds?
+    There are two types of builds provided by VueJS
+    **1. Full:** These are the builds that contain both the compiler and the runtime
+    **2. Runtime Only:** These builds doesn't include compiler but the code is responsible for creating Vue instances, rendering and patching virtual DOM
+89. ###
 
